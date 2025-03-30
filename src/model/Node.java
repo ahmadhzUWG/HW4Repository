@@ -35,6 +35,10 @@ public class Node {
         listenerThread.setDaemon(true);
         listenerThread.setPriority(Thread.MAX_PRIORITY);
         listenerThread.start();
+        
+        ShutdownListener shutdownListener = new ShutdownListener();
+        shutdownListener.setDaemon(true);
+        shutdownListener.start();
 
         this.startTime = System.currentTimeMillis();
         
