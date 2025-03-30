@@ -12,7 +12,7 @@ public class Node {
     private final LamportClock clock;
     private final Counter[] localCounters;
     private final Counter remoteCounter;
-    private static final int NUM_THREADS = 2;
+    private static final int NUM_THREADS = 8;
     private long startTime;
     private List<String> otherNodes = new ArrayList<String>();
 
@@ -50,10 +50,6 @@ public class Node {
             Thread.currentThread().interrupt();
         } finally {
         	long executionTime = System.currentTimeMillis() - startTime;
-        	try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-			}
             System.out.println("Final Lamport time: " + clock.getTime());
             System.out.println("Total Execution time = " + executionTime + " ms");
         }
@@ -64,17 +60,20 @@ public class Node {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println(nodeName + " listening...");
             while (true) {
-                try (Socket socket = serverSocket.accept();
-                    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-                    String message = in.readLine();
-                    if (message != null) {
-                        String[] parts = message.split(",");
-                        int receivedTime = Integer.parseInt(parts[0]);
-                        int senderId = Integer.parseInt(parts[1]);
-                        clock.update(receivedTime);
-                        remoteCounter.increment();
-                        System.out.println("Thread-" + Thread.currentThread().getId() + " executing received event (t=" + receivedTime + ") from Node" + senderId);
-                    }
+            	try {
+                    Socket socket = serverSocket.accept();
+                    ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+                    
+                    Event event = (Event) in.readObject();
+                    long receivedTime = event.getTimestamp();
+                    String senderId = event.getSender();
+                    clock.update(receivedTime);
+                    remoteCounter.increment();
+                    System.out.println("Thread-" + Thread.currentThread().getId() + " executing received event (t=" + receivedTime + ") from Node" + senderId);
+                    socket.close(); 
+                    in.close();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
                 }
             }
         } catch (IOException e) {

@@ -25,12 +25,9 @@ public class EventProcessor extends Thread {
 
     @Override
     public void run() {
-    	String threadName = "Thread_" + Thread.currentThread().getId();
-
         for (int i = 0; i < NUM_EVENTS; i++) {
             clock.tick();
             counter.increment();
-            System.out.println(threadName + " executing local event");
             sendEvent();
         }
 
@@ -47,9 +44,9 @@ public class EventProcessor extends Thread {
         
         try (Socket socket = new Socket(address, Node.port);
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
-        	            
         	
 			Event event = new Event(nodeName, receiver, clock.getTime());
+            System.out.println(nodeName + " sending event");
 			out.println(event);
         } catch (IOException e) {
             System.err.println("Error sending event from Node " + nodeName);
