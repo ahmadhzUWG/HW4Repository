@@ -12,7 +12,7 @@ public class EventProcessor extends Thread {
     private final LamportClock clock;
     private final String nodeName;
     private final CountDownLatch latch;
-    private static final int NUM_EVENTS = 3;
+    private static final int NUM_EVENTS = 200;
     private List<String> otherNodes;
 
     public EventProcessor(Counter counter, LamportClock clock, String nodeName, CountDownLatch latch, List<String> otherNodes) {
