@@ -43,7 +43,6 @@ public class Node {
             eventThreads[i] = new EventProcessor(localCounters[i], clock, nodeName, latch, otherNodes);
             eventThreads[i].start();
         }
-
         try {
             latch.await();
         } catch (InterruptedException e) {
