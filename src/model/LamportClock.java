@@ -4,22 +4,22 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class LamportClock {
     private final AtomicInteger time;
-    private final int nodeId;
+    private final int nodeIncrement;
 
-    public LamportClock(int nodeId) {
+    public LamportClock(int nodeIncrement) {
         this.time = new AtomicInteger(0);
-        this.nodeId = nodeId;
+        this.nodeIncrement = nodeIncrement;
     }
 
     public void tick() {
-        time.getAndAdd(nodeId);
+        time.getAndAdd(nodeIncrement);
     }
 
     public void update(int receivedTime) {
         int currentTime;
         do {
             currentTime = time.get();
-        } while (!time.compareAndSet(currentTime, Math.max(currentTime, receivedTime) + nodeId));
+        } while (!time.compareAndSet(currentTime, Math.max(currentTime, receivedTime) + nodeIncrement));
     }
 
     public int getTime() {
