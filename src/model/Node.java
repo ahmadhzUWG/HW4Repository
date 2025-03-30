@@ -99,7 +99,7 @@ public class Node {
 	private void loadOtherNodes(String nodeName, String ipAddress) {
 		String nodeSelf = nodeName + "," + ipAddress;
 		List<String> nodes = new ArrayList<String>();
-		try (BufferedReader br = new BufferedReader(new FileReader("src/nodes.csv"))) {
+		try (BufferedReader br = new BufferedReader(new FileReader("nodes.csv"))) {
 
             String line;
             while ((line = br.readLine()) != null) {
