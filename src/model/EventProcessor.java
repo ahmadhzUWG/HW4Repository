@@ -10,16 +10,14 @@ public class EventProcessor extends Thread {
     private final Counter counter;
     private final LamportClock clock;
     private final int nodeId;
-    private final int[] peerPorts;
     private final Random rand = new Random();
     private final CountDownLatch latch;
     private static final int MAX_NUM_EVENTS = 1000;
 
-    public EventProcessor(Counter counter, LamportClock clock, int nodeId, int[] peerPorts, CountDownLatch latch) {
+    public EventProcessor(Counter counter, LamportClock clock, int nodeId, CountDownLatch latch) {
         this.counter = counter;
         this.clock = clock;
         this.nodeId = nodeId;
-        this.peerPorts = peerPorts;
         this.latch = latch;
     }
 
@@ -39,8 +37,7 @@ public class EventProcessor extends Thread {
     }
 
     private void sendEvent() {
-        int targetNode = peerPorts[rand.nextInt(peerPorts.length)];
-        try (Socket socket = new Socket("localhost", targetNode);
+        try (Socket socket = new Socket("localhost", 4225);
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
         	out.println(clock.getTime() + "," + nodeId);
         } catch (IOException e) {

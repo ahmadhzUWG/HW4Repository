@@ -2,8 +2,6 @@ package model;
 
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.*;
 
 public class Node {
@@ -12,14 +10,12 @@ public class Node {
     private final LamportClock clock;
     private final Counter[] localCounters;
     private final Counter remoteCounter;
-    private final int[] peerPorts;
     private static final int NUM_THREADS = 2;
     private long startTime;
 
-    public Node(int nodeId, int port, int[] peerPorts) {
+    public Node(int nodeId, int port) {
         this.nodeId = nodeId;
         this.port = port;
-        this.peerPorts = peerPorts;
         this.clock = new LamportClock(nodeId);
         this.remoteCounter = new Counter();
         this.localCounters = new Counter[NUM_THREADS];
@@ -46,7 +42,7 @@ public class Node {
         
         Thread[] eventThreads = new Thread[NUM_THREADS];
         for (int i = 0; i < NUM_THREADS; i++) {
-            eventThreads[i] = new EventProcessor(localCounters[i], clock, nodeId, peerPorts, latch);
+            eventThreads[i] = new EventProcessor(localCounters[i], clock, nodeId, latch);
             eventThreads[i].start();
         }
 
@@ -87,17 +83,6 @@ public class Node {
             System.err.println("Error in Node " + nodeId);
         }
     }
-    public static int[] getPeerPorts(int nodeId) {
-        List<Integer> peerPortsList = new ArrayList<>();
-
-        for (int i = 0; i < 5; i++) {
-            if (i + 1 != nodeId) {
-                peerPortsList.add(4225 + i);
-            }
-        }
-
-        return peerPortsList.stream().mapToInt(Integer::intValue).toArray();
-    }
 
     public static void main(String[] args) {
         if (args.length < 1) {
@@ -106,9 +91,9 @@ public class Node {
         }
         int nodeId = Integer.parseInt(args[0]);
         int port = 4225 + (nodeId - 1);
-        int[] peerPorts = getPeerPorts(nodeId);
+
         
-        Node node = new Node(nodeId, port, peerPorts);
+        Node node = new Node(nodeId, port);
         node.start();
     }
 }
