@@ -19,6 +19,7 @@ public class Event implements Serializable {
 	private final String receiver;
 	private final long timestamp;
 	
+	@SuppressWarnings("unused")
 	private transient long p8, p9, p10, p11, p12, p13, p14;
 
 	public Event(String sender, String receiver, long timestamp) {

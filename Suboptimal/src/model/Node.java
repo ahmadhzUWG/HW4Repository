@@ -15,6 +15,9 @@ public class Node {
     private static final int NUM_THREADS = 8;
     private long startTime;
     private List<String> otherNodes = new ArrayList<String>();
+    
+    private final ExecutorService eventExecutor;
+    private final ExecutorService listenerExecutor;
 
     public Node(String nodeName, String ipAddress) {
     	loadOtherNodes(nodeName, ipAddress);
@@ -26,15 +29,15 @@ public class Node {
         for (int i = 0; i < NUM_THREADS; i++) {
             localCounters[i] = new Counter();
         }
+        
+        this.eventExecutor = Executors.newFixedThreadPool(NUM_THREADS);
+        this.listenerExecutor = Executors.newSingleThreadExecutor();
    }
 
     public void start() {
         CountDownLatch latch = new CountDownLatch(NUM_THREADS);
 
-        Thread listenerThread = new Thread(this::listenForEvents);
-        listenerThread.setDaemon(true);
-        listenerThread.setPriority(Thread.MAX_PRIORITY);
-        listenerThread.start();
+        listenerExecutor.execute(this::listenForEvents);
         
         ShutdownListener shutdownListener = new ShutdownListener();
         shutdownListener.setDaemon(true);
@@ -42,10 +45,8 @@ public class Node {
 
         this.startTime = System.currentTimeMillis();
         
-        Thread[] eventThreads = new Thread[NUM_THREADS];
         for (int i = 0; i < NUM_THREADS; i++) {
-            eventThreads[i] = new EventProcessor(localCounters[i], clock, nodeName, latch, otherNodes);
-            eventThreads[i].start();
+            eventExecutor.execute(new EventProcessor(localCounters[i], clock, nodeName, latch, otherNodes));
         }
         try {
             latch.await();
@@ -55,6 +56,9 @@ public class Node {
         	long executionTime = System.currentTimeMillis() - startTime;
             System.out.println("Final Lamport time: " + clock.getTime());
             System.out.println("Total Execution time = " + executionTime + " ms");
+            
+            eventExecutor.shutdown();
+            listenerExecutor.shutdown();
         }
     }
 
@@ -63,9 +67,7 @@ public class Node {
     	File eventLog = new File("events.log");
         try {
 			eventLog.createNewFile();
-			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     }
@@ -86,25 +88,34 @@ public class Node {
         	this.createEventLog();
             System.out.println(nodeName + " listening...");
             while (true) {
-            	try {
+                try {
                     Socket socket = serverSocket.accept();
-                    ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-                    Event event = (Event) in.readObject();
-                    long receivedTime = event.getTimestamp();
-                    String receiver = event.getReceiver();
-                    clock.update(receivedTime);
-                    remoteCounter.increment();
-                    System.out.println("Thread-" + Thread.currentThread().getId() + " executing received event (t=" + receivedTime + ") from Node" + receiver);
-                    this.logEvent(event);
-                    socket.close(); 
-                    in.close();
-                } catch (ClassNotFoundException e) {
-                	System.out.println("ERROR IN LISTENING FOR EVENTS: " + e.getMessage());
+                    eventExecutor.execute(() -> processEvent(socket));
+                } catch (Exception e) {
+                    System.err.println("ERROR IN LISTENING FOR EVENTS: " + e.getMessage());
                     e.printStackTrace();
                 }
             }
         } catch (IOException e) {
             System.err.println("Error in " + nodeName + ": " + e.getMessage());
+        }
+    }
+
+    private void processEvent(Socket socket) {
+        try (ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
+            Event event = (Event) in.readObject();
+            long receivedTime = event.getTimestamp();
+            String receiver = event.getReceiver();
+            clock.update(receivedTime);
+            remoteCounter.increment();
+            System.out.println("Thread-" + Thread.currentThread().getId() + " executing received event (t=" + receivedTime + ") from Node" + receiver);
+            this.logEvent(event);
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Error processing event: " + e.getMessage());
+        } finally {
+            try {
+                socket.close();
+            } catch (IOException ignored) {}
         }
     }
 
@@ -123,7 +134,7 @@ public class Node {
 	private void loadOtherNodes(String nodeName, String ipAddress) {
 		String nodeSelf = nodeName + "," + ipAddress;
 		List<String> nodes = new ArrayList<String>();
-		try (BufferedReader br = new BufferedReader(new FileReader("nodes.csv"))) {
+		try (BufferedReader br = new BufferedReader(new FileReader("src/nodes.csv"))) {
 
             String line;
             while ((line = br.readLine()) != null) {
