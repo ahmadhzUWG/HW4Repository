@@ -91,10 +91,10 @@ public class Node {
                     ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
                     Event event = (Event) in.readObject();
                     long receivedTime = event.getTimestamp();
-                    String receiver = event.getReceiver();
+                    String sender = event.getSender();
                     clock.update(receivedTime);
                     remoteCounter.increment();
-                    System.out.println("Thread-" + Thread.currentThread().getId() + " executing received event (t=" + receivedTime + ") from Node" + receiver);
+                    System.out.println("Thread-" + Thread.currentThread().getId() + " executing received event (t=" + receivedTime + ") from Node" + sender);
                     this.logEvent(event);
                     socket.close(); 
                     in.close();

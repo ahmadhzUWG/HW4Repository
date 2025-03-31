@@ -110,7 +110,7 @@ public class Node {
             clock.update(receivedTime);
             remoteCounter.increment();
             System.out.println("Thread-" + Thread.currentThread().getId() + " executing received event (t=" + receivedTime + ") from Node" + sender);
-            this.logEvent(event);
+            //this.logEvent(event);
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Error processing event: " + e.getMessage());
         } finally {
@@ -135,7 +135,7 @@ public class Node {
 	private void loadOtherNodes(String nodeName, String ipAddress) {
 		String nodeSelf = nodeName + "," + ipAddress;
 		List<String> nodes = new ArrayList<String>();
-		try (BufferedReader br = new BufferedReader(new FileReader("src/nodes.csv"))) {
+		try (BufferedReader br = new BufferedReader(new FileReader("nodes.csv"))) {
 
             String line;
             while ((line = br.readLine()) != null) {
