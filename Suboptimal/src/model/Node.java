@@ -57,6 +57,12 @@ public class Node {
             System.out.println("Final Lamport time: " + clock.getTime());
             System.out.println("Total Execution time = " + executionTime + " ms");
             
+            try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+            
             eventExecutor.shutdown();
             try {
                 if (!eventExecutor.awaitTermination(10, TimeUnit.SECONDS)) {
