@@ -65,11 +65,12 @@ public class Node {
     private void createEventLog()
     {
     	File eventLog = new File("events.log");
-        try {
-			eventLog.createNewFile();
+    	try (FileWriter writer = new FileWriter(eventLog, false)) {
+            writer.write("");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+        
     }
     
     private void logEvent(Event event) {
@@ -105,10 +106,10 @@ public class Node {
         try (ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
             Event event = (Event) in.readObject();
             long receivedTime = event.getTimestamp();
-            String receiver = event.getReceiver();
+            String sender = event.getSender();
             clock.update(receivedTime);
             remoteCounter.increment();
-            System.out.println("Thread-" + Thread.currentThread().getId() + " executing received event (t=" + receivedTime + ") from Node" + receiver);
+            System.out.println("Thread-" + Thread.currentThread().getId() + " executing received event (t=" + receivedTime + ") from Node" + sender);
             this.logEvent(event);
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Error processing event: " + e.getMessage());
@@ -134,7 +135,7 @@ public class Node {
 	private void loadOtherNodes(String nodeName, String ipAddress) {
 		String nodeSelf = nodeName + "," + ipAddress;
 		List<String> nodes = new ArrayList<String>();
-		try (BufferedReader br = new BufferedReader(new FileReader("nodes.csv"))) {
+		try (BufferedReader br = new BufferedReader(new FileReader("src/nodes.csv"))) {
 
             String line;
             while ((line = br.readLine()) != null) {
