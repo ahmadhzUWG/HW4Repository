@@ -54,14 +54,16 @@ public class Node {
             Thread.currentThread().interrupt();
         } finally {
         	long executionTime = System.currentTimeMillis() - startTime;
-            System.out.println("Final Lamport time: " + clock.getTime());
-            System.out.println("Total Execution time = " + executionTime + " ms");
-            
-            try {
+        	
+        	try {
 				Thread.sleep(3000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+            
+            System.out.println("Final Lamport time: " + clock.getTime());
+            System.out.println("Total Execution time = " + executionTime + " ms");
+            
             
             eventExecutor.shutdown();
             try {
