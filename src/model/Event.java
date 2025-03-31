@@ -12,6 +12,12 @@ import java.io.Serializable;
 public class Event implements Serializable {
 
 	private static final long serialVersionUID = 4225L;
+	
+	private long p1, p2, p3, p4, p5, p6, p7;
+	
+	public long preventJVMOptimization(){
+		return p1 + p2 + p3 + p4 + p5 + p6 + p7; 
+	}
 
 	private final String sender;
 	private final String receiver;
