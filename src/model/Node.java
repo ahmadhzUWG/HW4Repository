@@ -64,16 +64,13 @@ public class Node {
             while (true) {
             	try {
                     Socket socket = serverSocket.accept();
-                    System.out.println("1");
                     ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-                    System.out.println("2");
                     Event event = (Event) in.readObject();
-                    System.out.println("3");
                     long receivedTime = event.getTimestamp();
-                    String senderId = event.getSender();
+                    String receiver = event.getReceiver();
                     clock.update(receivedTime);
                     remoteCounter.increment();
-                    System.out.println("Thread-" + Thread.currentThread().getId() + " executing received event (t=" + receivedTime + ") from Node" + senderId);
+                    System.out.println("Thread-" + Thread.currentThread().getId() + " executing received event (t=" + receivedTime + ") from Node" + receiver);
                     socket.close(); 
                     in.close();
                 } catch (ClassNotFoundException e) {
