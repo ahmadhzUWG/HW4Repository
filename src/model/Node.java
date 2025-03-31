@@ -58,8 +58,32 @@ public class Node {
         }
     }
 
+    private void createEventLog()
+    {
+    	File eventLog = new File("events.log");
+        try {
+			eventLog.createNewFile();
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
+    private void logEvent(Event event) {
+        try {
+        	FileWriter writer = new FileWriter("events.log");
+        	String receiver = event.getReceiver();
+        	writer.write(receiver + " has sent an event\n");
+        	writer.close();
+        } catch (IOException e) {
+        	e.printStackTrace();
+        }
+    }
+    
     private void listenForEvents() {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
+        	this.createEventLog();
             System.out.println(nodeName + " listening...");
             while (true) {
             	try {
@@ -71,6 +95,7 @@ public class Node {
                     clock.update(receivedTime);
                     remoteCounter.increment();
                     System.out.println("Thread-" + Thread.currentThread().getId() + " executing received event (t=" + receivedTime + ") from Node" + receiver);
+                    this.logEvent(event);
                     socket.close(); 
                     in.close();
                 } catch (ClassNotFoundException e) {
