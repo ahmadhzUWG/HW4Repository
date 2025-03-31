@@ -42,10 +42,12 @@ public class Node {
 
         this.startTime = System.currentTimeMillis();
         
-        Thread[] eventThreads = new Thread[NUM_THREADS];
+        Thread[] virtualThreads = new Thread[NUM_THREADS];
         for (int i = 0; i < NUM_THREADS; i++) {
-            eventThreads[i] = new EventProcessor(localCounters[i], clock, nodeName, latch, otherNodes);
-            eventThreads[i].start();
+        	final int idx = i;
+            virtualThreads[i] = Thread.ofVirtual().start(() -> {
+            	new EventProcessor(localCounters[idx], clock, nodeName, latch, otherNodes).run();
+            });
         }
         try {
             latch.await();
@@ -61,11 +63,9 @@ public class Node {
     private void createEventLog()
     {
     	File eventLog = new File("events.log");
-        try {
-			eventLog.createNewFile();
-			
+    	try (FileWriter writer = new FileWriter(eventLog, false)) {
+            writer.write("");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     }
@@ -123,7 +123,7 @@ public class Node {
 	private void loadOtherNodes(String nodeName, String ipAddress) {
 		String nodeSelf = nodeName + "," + ipAddress;
 		List<String> nodes = new ArrayList<String>();
-		try (BufferedReader br = new BufferedReader(new FileReader("nodes.csv"))) {
+		try (BufferedReader br = new BufferedReader(new FileReader("src/nodes.csv"))) {
 
             String line;
             while ((line = br.readLine()) != null) {
