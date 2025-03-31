@@ -58,16 +58,17 @@ public class Node {
         }
     }
 
-
     private void listenForEvents() {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println(nodeName + " listening...");
             while (true) {
             	try {
                     Socket socket = serverSocket.accept();
+                    System.out.println("1");
                     ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-                    
+                    System.out.println("2");
                     Event event = (Event) in.readObject();
+                    System.out.println("3");
                     long receivedTime = event.getTimestamp();
                     String senderId = event.getSender();
                     clock.update(receivedTime);
@@ -76,11 +77,12 @@ public class Node {
                     socket.close(); 
                     in.close();
                 } catch (ClassNotFoundException e) {
+                	System.out.println("ERROR IN LISTENING FOR EVENTS: " + e.getMessage());
                     e.printStackTrace();
                 }
             }
         } catch (IOException e) {
-            System.err.println("Error in " + nodeName);
+            System.err.println("Error in " + nodeName + ": " + e.getMessage());
         }
     }
 

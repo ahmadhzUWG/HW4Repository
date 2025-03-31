@@ -1,7 +1,7 @@
 package model;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.List;
 import java.util.Random;
@@ -43,11 +43,13 @@ public class EventProcessor extends Thread {
         String address = parts[1];
         
         try (Socket socket = new Socket(address, Node.port);
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
-        	
-			Event event = new Event(nodeName, receiver, clock.getTime());
-            System.out.println(nodeName + " sending event");
-			out.println(event);
+    	    ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
+
+    	    Event event = new Event(nodeName, receiver, clock.getTime());
+    	    System.out.println(nodeName + " sending event");
+
+    	    out.writeObject(event);
+    	    out.flush();
         } catch (IOException e) {
             System.err.println("Error sending event from Node " + nodeName);
         }
