@@ -11,17 +11,15 @@ import java.io.Serializable;
  */
 public class Event implements Serializable {
 
-	private static final long serialVersionUID = 4225L;
+	private static final long  serialVersionUID = 4225L;
 	
-	private long p1, p2, p3, p4, p5, p6, p7;
+	private transient long p1, p2, p3, p4, p5, p6, p7;
 	
-	public long preventJVMOptimization(){
-		return p1 + p2 + p3 + p4 + p5 + p6 + p7; 
-	}
-
 	private final String sender;
 	private final String receiver;
 	private final long timestamp;
+	
+	private transient long p8, p9, p10, p11, p12, p13, p14;
 
 	public Event(String sender, String receiver, long timestamp) {
 		this.sender = sender;
@@ -44,5 +42,9 @@ public class Event implements Serializable {
 	@Override
 	public String toString() {
 		return "Event from " + sender + " to " + receiver + " with timestamp " + timestamp;
+	}
+	
+	public long preventJVMOptimization(){
+		return p1 + p2 + p3 + p4 + p5 + p6 + p7; 
 	}
 }
