@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
-public class EventProcessor extends Thread {
+public class EventProcessor implements Runnable {
     private final Counter counter;
     private final LamportClock clock;
     private final String nodeName;
