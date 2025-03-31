@@ -72,7 +72,7 @@ public class Node {
     
     private void logEvent(Event event) {
         try {
-        	FileWriter writer = new FileWriter("events.log");
+        	FileWriter writer = new FileWriter("events.log", true);
         	String receiver = event.getReceiver();
         	writer.write(receiver + " has sent an event\n");
         	writer.close();
