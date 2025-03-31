@@ -58,6 +58,15 @@ public class Node {
             System.out.println("Total Execution time = " + executionTime + " ms");
             
             eventExecutor.shutdown();
+            try {
+                if (!eventExecutor.awaitTermination(10, TimeUnit.SECONDS)) {
+                    eventExecutor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                eventExecutor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+
             listenerExecutor.shutdown();
         }
     }
@@ -91,7 +100,9 @@ public class Node {
             while (true) {
                 try {
                     Socket socket = serverSocket.accept();
-                    eventExecutor.execute(() -> processEvent(socket));
+                    if (!eventExecutor.isShutdown() && !eventExecutor.isTerminated()) {
+                        eventExecutor.execute(() -> processEvent(socket));
+                    }
                 } catch (Exception e) {
                     System.err.println("ERROR IN LISTENING FOR EVENTS: " + e.getMessage());
                     e.printStackTrace();
@@ -110,7 +121,7 @@ public class Node {
             clock.update(receivedTime);
             remoteCounter.increment();
             System.out.println("Thread-" + Thread.currentThread().getId() + " executing received event (t=" + receivedTime + ") from Node" + sender);
-            //this.logEvent(event);
+            this.logEvent(event);
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Error processing event: " + e.getMessage());
         } finally {
